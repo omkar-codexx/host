@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>QuizPoll - Realtime MCQ & Results Dashboard</title>
+  <meta name="description" content="Clean and responsive MCQ quiz platform with real-time score polling and results.">
+  
+  <!-- Modern Clean Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        </div>
+        <div class="logo-text">
+          <span class="brand-title">QuizPoll</span>
+          <span class="brand-sub">Live Assessment</span>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <div id="connectionStatus" class="status-indicator status-offline">
+          <span class="status-dot"></span>
+          <span class="status-label">Connecting</span>
+        </div>
+        <button id="btnConfigModal" class="btn btn-secondary btn-icon-sm" title="Database Settings">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span class="btn-text-desktop">Settings</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    
+    <!-- VIEW 1: ADMIN DASHBOARD -->
+    <section id="adminView" class="view-panel hidden">
+      
+      <!-- Top Title Bar -->
+      <div class="page-title-row">
+        <div>
+          <h1 class="page-title">Polling Dashboard</h1>
+          <p class="page-subtitle">Manage questions, invite participants, and track live responses.</p>
+        </div>
+        <div class="page-actions">
+          <button id="btnClearCurrentData" class="btn btn-secondary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Clear Dashboard Data
+          </button>
+          <button id="btnNewQuizModal" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Create Quiz
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Metric Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Current Quiz</div>
+          <div class="metric-value truncate" id="statQuizTitle">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total Questions</div>
+          <div class="metric-value" id="statTotalQuestions">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total Submissions</div>
+          <div class="metric-value" id="statParticipantsCount">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Top Performer</div>
+          <div class="metric-value text-primary truncate" id="statTopScorer">None yet</div>
+        </div>
+      </div>
+
+      <!-- Shareable Link Card -->
+      <div class="invite-card">
+        <div class="invite-header">
+          <span class="badge-tag">Participant URL</span>
+          <span class="invite-note">Share this link with students or participants</span>
+        </div>
+        <div class="invite-body">
+          <input type="text" id="shareLinkDisplay" class="invite-input" readonly value="Loading link...">
+          <div class="invite-btns">
+            <button id="btnCopyLink" class="btn btn-secondary">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy Link
+            </button>
+            <button id="btnOpenParticipantView" class="btn btn-outline">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Test View
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graph & Leaderboard Row -->
+      <div class="content-columns">
+        
+        <!-- Live Bar Chart -->
+        <div class="card-box chart-card">
+          <div class="card-box-header">
+            <div>
+              <h2 class="card-title">Score Polling Graph</h2>
+              <p class="card-desc">Participants sorted by total correct answers</p>
+            </div>
+            <span class="badge-live">Live</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="pollingChart"></canvas>
+            <div id="chartEmptyState" class="empty-state">
+              <p class="empty-title">No submissions yet</p>
+              <p class="empty-subtitle">Responses from participants will display here automatically.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="card-box leaderboard-card">
+          <div class="card-box-header">
+            <div>
+              <h2 class="card-title">Rankings</h2>
+              <p class="card-desc">Highest accuracy participants</p>
+            </div>
+          </div>
+          <div class="leaderboard-items" id="leaderboardList">
+            <div class="empty-state-text">No responses submitted yet.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Questions List -->
+      <div class="card-box mt-4">
+        <div class="card-box-header">
+          <div>
+            <h2 class="card-title">Quiz Questions</h2>
+            <p class="card-desc">Active questions and correct answer key</p>
+          </div>
+          <button id="btnAddQuestionInline" class="btn btn-secondary btn-sm">+ Add Question</button>
+        </div>
+        <div id="questionsContainer" class="questions-list"></div>
+      </div>
+
+    </section>
+
+    <!-- VIEW 2: PARTICIPANT PORTAL (Optimized for Mobile) -->
+    <section id="participantView" class="view-panel">
+      
+      <!-- Step 1: Join / Enter Name -->
+      <div id="participantStepJoin" class="portal-card">
+        <div class="portal-header">
+          <span class="portal-badge">Quiz Participation</span>
+          <h1 class="portal-title" id="participantQuizTitle">Quiz Assessment</h1>
+          <p class="portal-desc">Enter your full name or nickname to begin answering the questions.</p>
+        </div>
+
+        <form id="formJoinQuiz" class="portal-form">
+          <div class="form-group">
+            <label for="inputNickname">Full Name / Nickname</label>
+            <input type="text" id="inputNickname" class="form-input form-input-lg" placeholder="Enter your name" required autocomplete="name">
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block" id="btnStartQuiz">
+            Start Quiz
+          </button>
+        </form>
+      </div>
+
+      <!-- Step 2: Answer MCQ Questions -->
+      <div id="participantStepQuestions" class="portal-card hidden">
+        <div class="step-meta">
+          <span class="step-user">Participant: <strong id="displayParticipantName">-</strong></span>
+          <span class="step-counter" id="questionProgressPill">Question 1 of 5</span>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="quizProgressBar"></div>
+        </div>
+
+        <div id="activeQuestionCard" class="question-display">
+          <!-- Question rendered via JS -->
+        </div>
+
+        <div class="question-nav">
+          <button type="button" id="btnPrevQuestion" class="btn btn-secondary" disabled>Previous</button>
+          <button type="button" id="btnSkipQuestion" class="btn btn-outline btn-sm">Skip</button>
+          <div class="flex-spacer"></div>
+          <button type="button" id="btnNextQuestion" class="btn btn-primary">Next</button>
+          <button type="button" id="btnSubmitQuiz" class="btn btn-success hidden">Submit Answers</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Success Screen (No Dashboard Button for Participants) -->
+      <div id="participantStepResult" class="portal-card text-center hidden">
+        <div class="check-icon-circle">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h1 class="portal-title">Quiz Submitted</h1>
+        <p class="portal-desc">Thank you, <span id="resultNickname"></span>. Your submission has been successfully recorded.</p>
+
+        <div class="score-card">
+          <div class="score-number" id="resultScore">0 / 0</div>
+          <div class="score-meta" id="resultAccuracy">Accuracy: 0%</div>
+        </div>
+
+        <div class="result-notice" id="resultFeedback">
+          Your response has been submitted to the host.
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL: Create Quiz -->
+  <div id="modalCreateQuiz" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Quiz</h3>
+        <button class="modal-close-btn" id="btnCloseCreateQuiz" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formCreateQuiz">
+          <div class="form-group">
+            <label for="newQuizTitle">Quiz Title</label>
+            <input type="text" id="newQuizTitle" class="form-input" placeholder="e.g. Science & General Trivia" required>
+          </div>
+
+          <div class="builder-section-header">
+            <h4>Questions & Options</h4>
+            <span class="helper-text">Add your MCQ questions and select the radio button for the correct option.</span>
+          </div>
+
+          <div id="builderQuestionsList" class="builder-questions-wrap"></div>
+
+          <button type="button" id="btnAddQuestionBuilder" class="btn btn-secondary btn-block mt-3">
+            + Add Another Question
+          </button>
+
+          <div class="modal-actions mt-4">
+            <button type="button" class="btn btn-secondary" id="btnCancelCreateQuiz">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveQuiz">Save Quiz</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Database Settings -->
+  <div id="modalFirebaseConfig" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Firebase Database Settings</h3>
+        <button class="modal-close-btn" id="btnCloseConfigModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formFirebaseConfig">
+          <div class="form-group">
+            <label for="cfgApiKey">API Key</label>
+            <input type="text" id="cfgApiKey" class="form-input" value="AIzaSyAQ9iKssTJdHQNbU94LH1mvoId3rrzLUns">
+          </div>
+          <div class="form-group">
+            <label for="cfgDatabaseURL">Database URL</label>
+            <input type="text" id="cfgDatabaseURL" class="form-input" value="https://test-92c67-default-rtdb.firebaseio.com">
+          </div>
+          <div class="form-group">
+            <label for="cfgProjectId">Project ID</label>
+            <input type="text" id="cfgProjectId" class="form-input" value="test-92c67">
+          </div>
+
+          <div class="modal-actions mt-4">
+            <button type="button" class="btn btn-secondary" id="btnResetToDemo">Reset to Local</button>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="toast-area"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
