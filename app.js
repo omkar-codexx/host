@@ -14,237 +14,237 @@ const DEFAULT_FIREBASE_CONFIG = {
 };
 
 const DEFAULT_QUIZ = {
-  id: "quiz_privacy_2024",
-  title: "Digital Privacy & Data Protection Assessment (DPDPA)",
+  id: "quiz_dpdpa_assessment_2024",
+  title: "DPDPA & Data Privacy Assessment",
   createdAt: Date.now(),
   questions: [
     {
       id: "q1",
-      question: "What are digital assets?",
+      question: "Which of the following is an example of personal data?",
       options: [
-        "Digital files, photos, videos, and documents",
-        "Only physical cash",
-        "Only office furniture",
-        "Only printed books"
+        "A company's annual profit",
+        "A person's email address",
+        "A software version number",
+        "A public holiday date"
+      ],
+      correctIndex: 1 // B
+    },
+    {
+      id: "q2",
+      question: "An organisation collects customer phone numbers. What should it generally do?",
+      options: [
+        "Share them with all employees",
+        "Keep them forever",
+        "Use them for a specified purpose",
+        "Publish them online"
+      ],
+      correctIndex: 2 // C
+    },
+    {
+      id: "q3",
+      question: "Who is called a Data Principal under the DPDPA?",
+      options: [
+        "The individual to whom personal data relates",
+        "The company storing the data",
+        "The software developer",
+        "The government database operator"
       ],
       correctIndex: 0 // A
     },
     {
-      id: "q2",
-      question: "What is personal data?",
-      options: [
-        "Only public news",
-        "Information that can identify a person",
-        "Only computer hardware",
-        "Only company profits"
-      ],
-      correctIndex: 1 // B
-    },
-    {
-      id: "q3",
-      question: "Which is an organisation's digital asset?",
-      options: [
-        "Office chair",
-        "Company database",
-        "Office building",
-        "Parking space"
-      ],
-      correctIndex: 1 // B
-    },
-    {
       id: "q4",
-      question: "What does permission mean in data privacy?",
+      question: "What does valid consent generally require?",
       options: [
-        "Deleting all files",
-        "Giving approval for an activity",
-        "Sharing passwords publicly",
-        "Blocking internet access"
+        "A person's silence",
+        "Permission obtained through misleading information",
+        "Automatic approval for every future use",
+        "A clear, informed and voluntary choice"
       ],
-      correctIndex: 1 // B
+      correctIndex: 3 // D
     },
     {
       id: "q5",
-      question: "What is digital privacy?",
+      question: "Which situation may indicate a data breach?",
       options: [
-        "Increasing internet speed",
-        "Buying a computer",
-        "Protecting personal information in digital environments",
-        "Creating social media posts"
+        "An employee updates a report",
+        "Customer records are accessed without authorisation",
+        "A company deletes duplicate files",
+        "A user changes a password"
       ],
-      correctIndex: 2 // C
+      correctIndex: 1 // B
     },
     {
       id: "q6",
-      question: "Which is an example of digital personal data?",
+      question: "What is the main role of a Data Fiduciary?",
       options: [
-        "A blank notebook",
-        "A phone number stored digitally",
-        "An empty chair",
-        "A plain wall"
+        "To decide why and how personal data is processed",
+        "To own every user's identity",
+        "To prevent users from accessing websites",
+        "To issue government identity cards"
       ],
-      correctIndex: 1 // B
+      correctIndex: 0 // A
     },
     {
       id: "q7",
-      question: "What is data protection?",
+      question: "A website asks for your date of birth to provide a service. What should you check?",
       options: [
-        "Making data public",
-        "Sharing every file",
-        "Deleting all digital records",
-        "Keeping data safe from misuse and unauthorised access"
+        "Whether the website has colourful graphics",
+        "Whether the website has many advertisements",
+        "Why the information is needed and how it will be used",
+        "Whether the website uses large fonts"
       ],
-      correctIndex: 3 // D
+      correctIndex: 2 // C
     },
     {
       id: "q8",
-      question: "What does data privacy focus on?",
+      question: "Which of the following is an example of a digital asset?",
       options: [
-        "How computers are manufactured",
-        "How personal data is collected, used, and shared",
-        "How websites are designed",
-        "How fast a network works"
-      ],
-      correctIndex: 1 // B
-    },
-    {
-      id: "q9",
-      question: "What is consent?",
-      options: [
-        "Buying a new device",
-        "Creating a password",
-        "Giving permission for a specific purpose",
-        "Installing an application"
-      ],
-      correctIndex: 2 // C
-    },
-    {
-      id: "q10",
-      question: "Who is a Data Principal?",
-      options: [
-        "The company's building owner",
-        "A computer technician",
-        "A website designer",
-        "The person whose personal data is being processed"
+        "A paper notebook kept offline",
+        "A physical chair",
+        "A printed newspaper",
+        "A company database stored digitally"
       ],
       correctIndex: 3 // D
     },
     {
-      id: "q11",
-      question: "Who is a Data Fiduciary?",
+      id: "q9",
+      question: "What does data minimisation mean in practice?",
       options: [
-        "A person who only repairs computers",
-        "A person or organisation that determines why and how personal data is processed",
-        "A person who sells computer hardware",
-        "A person who uses a public library"
+        "Collecting only the data needed for a purpose",
+        "Collecting all available user information",
+        "Sharing data with more departments",
+        "Keeping multiple copies of every record"
+      ],
+      correctIndex: 0 // A
+    },
+    {
+      id: "q10",
+      question: "A user withdraws consent for a particular data-processing activity. What does this mean?",
+      options: [
+        "The user must close their account",
+        "The user has taken back previously given permission",
+        "The organisation can ignore the request",
+        "All internet access must stop"
       ],
       correctIndex: 1 // B
     },
     {
-      id: "q12",
-      question: "Which information should be handled carefully?",
+      id: "q11",
+      question: "Which action is most likely to help protect an online account?",
       options: [
-        "A blank sheet of paper",
-        "A public weather report",
-        "Health information",
-        "An empty folder"
+        "Using the same password everywhere",
+        "Sharing passwords with colleagues",
+        "Using a strong, unique password and multi-factor authentication",
+        "Turning off all security alerts"
       ],
       correctIndex: 2 // C
     },
     {
-      id: "q13",
-      question: "What is a data breach?",
+      id: "q12",
+      question: "What is the purpose of a privacy policy?",
       options: [
-        "A computer software update",
-        "A routine file backup",
-        "A new website design",
-        "An incident involving unauthorised access to or disclosure of data"
+        "To explain how an organisation handles personal data",
+        "To guarantee that no cyberattack can happen",
+        "To provide free internet access",
+        "To replace every security measure"
+      ],
+      correctIndex: 0 // A
+    },
+    {
+      id: "q13",
+      question: "An employee sends a customer file to the wrong external recipient. What is the main concern?",
+      options: [
+        "The file name may be too long",
+        "The recipient may use a different computer",
+        "The email may have a spelling mistake",
+        "Personal data may have been disclosed to an unauthorised person"
       ],
       correctIndex: 3 // D
     },
     {
       id: "q14",
-      question: "What is online identity?",
+      question: "Which statement about consent is most appropriate?",
       options: [
-        "A computer's screen size",
-        "Information representing a person on the internet",
-        "An internet cable",
-        "A printer model"
+        "Consent can never be withdrawn",
+        "Consent should relate to a clear purpose",
+        "Consent is always implied by visiting a website",
+        "Consent allows unlimited use of data forever"
       ],
       correctIndex: 1 // B
     },
     {
       id: "q15",
-      question: "What does a privacy policy explain?",
+      question: "Why should an organisation limit access to personal data?",
       options: [
-        "How to repair a keyboard",
-        "How to install a printer",
-        "How an organisation handles personal information",
-        "How to increase screen brightness"
+        "To make files harder to find for everyone",
+        "To stop employees doing any work",
+        "To ensure only authorised people can access it",
+        "To allow all departments to copy it"
       ],
       correctIndex: 2 // C
     },
     {
       id: "q16",
-      question: "Why is personal data protection important?",
+      question: "What is online identity mainly associated with?",
       options: [
-        "To share passwords with everyone",
-        "To publish private information",
-        "To remove all security controls",
-        "To reduce misuse and protect people's privacy"
+        "Information and activity that represent a person online",
+        "Only a person's physical appearance",
+        "Only the model of their phone",
+        "Only their internet connection speed"
+      ],
+      correctIndex: 0 // A
+    },
+    {
+      id: "q17",
+      question: "A company no longer needs personal data for its stated purpose. What should it consider?",
+      options: [
+        "Selling the data immediately",
+        "Making the data public",
+        "Copying it to every employee's device",
+        "Deleting it when required, subject to applicable legal obligations"
       ],
       correctIndex: 3 // D
     },
     {
-      id: "q17",
-      question: "What is data sharing?",
+      id: "q18",
+      question: "Which example best describes data sharing?",
       options: [
-        "Turning off a computer",
-        "Providing data to another person or organisation",
-        "Printing a blank page",
-        "Changing a screen background"
+        "Changing a file's font",
+        "Providing customer information to another organisation",
+        "Renaming a folder",
+        "Locking a computer screen"
       ],
       correctIndex: 1 // B
     },
     {
-      id: "q18",
-      question: "What does withdrawing consent mean?",
+      id: "q19",
+      question: "What is one important purpose of the DPDPA, 2023?",
       options: [
-        "Creating a new account",
-        "Sharing data publicly",
-        "Taking back previously given permission",
-        "Changing a computer's password"
+        "To remove the need for online security",
+        "To make all personal data public",
+        "To regulate digital personal data processing while protecting individuals' rights",
+        "To prohibit every organisation from collecting data"
       ],
       correctIndex: 2 // C
     },
     {
-      id: "q19",
-      question: "What is the main purpose of the DPDPA Act, 2023?",
+      id: "q20",
+      question: "An employee finds customer information on a public website that should not be public. What is the best first response?",
       options: [
-        "To regulate vehicle traffic",
-        "To control computer prices",
-        "To manage school examinations",
-        "To regulate digital personal data processing and protect individuals' data"
+        "Download and forward it to friends",
+        "Ignore it because it is already online",
+        "Post it on social media as proof",
+        "Report it through the appropriate organisational security or privacy channel"
       ],
       correctIndex: 3 // D
-    },
-    {
-      id: "q20",
-      question: "Why should organisations protect users' personal data?",
-      options: [
-        "To make all data publicly available",
-        "To respect privacy and reduce the risk of data misuse",
-        "To share every user's password",
-        "To avoid maintaining security"
-      ],
-      correctIndex: 1 // B
     }
   ],
-  participants: {} // Fresh empty participants
+  participants: {}
 };
 
 let appState = {
   activeQuiz: null,
-  activeQuizId: "quiz_privacy_2024",
+  activeQuizId: "quiz_dpdpa_assessment_2024",
   isFirebaseActive: false,
   firebaseDb: null,
   participant: {
