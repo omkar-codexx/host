@@ -310,13 +310,19 @@ function checkRouteMode() {
 // FIREBASE REALTIME DATABASE SYNC
 // ==========================================
 function initFirebase() {
-  const savedConfig = localStorage.getItem("quizpoll_firebase_config");
   const statusEl = document.getElementById("connectionStatus");
-
   let config = DEFAULT_FIREBASE_CONFIG;
+
+  const savedConfig = localStorage.getItem("quizpoll_firebase_config");
   if (savedConfig) {
     try {
-      config = JSON.parse(savedConfig);
+      const parsed = JSON.parse(savedConfig);
+      // Only use if it points to current test-92c67 project, else discard old project
+      if (parsed.projectId === "test-92c67") {
+        config = parsed;
+      } else {
+        localStorage.removeItem("quizpoll_firebase_config");
+      }
     } catch (e) {
       config = DEFAULT_FIREBASE_CONFIG;
     }
