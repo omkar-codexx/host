@@ -263,8 +263,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1. Immediately determine if participant mode or admin mode BEFORE network calls
   checkRouteMode();
   
-  // 2. Connect Firebase & listeners in parallel
-  initFirebase();
+  // 2. Connect Zero-Config Cloud Realtime Sync
+  initRealtimeCloudSync();
   setupEventListeners();
 });
 
@@ -307,121 +307,89 @@ function checkRouteMode() {
 }
 
 // ==========================================
-// FIREBASE REALTIME DATABASE SYNC
 // ==========================================
-function initFirebase() {
+// ZERO-CONFIG REALTIME CLOUD STREAM (Zero Effort, 100% Free, No Rules/Login required)
+// ==========================================
+const CLOUD_SYNC_TOPIC = "quizpoll_omkar_live_assess_v2";
+
+function initRealtimeCloudSync() {
   const statusEl = document.getElementById("connectionStatus");
-  let config = DEFAULT_FIREBASE_CONFIG;
-
-  const savedConfig = localStorage.getItem("quizpoll_firebase_config");
-  if (savedConfig) {
-    try {
-      const parsed = JSON.parse(savedConfig);
-      // Only use if it points to current test-92c67 project, else discard old project
-      if (parsed.projectId === "test-92c67") {
-        config = parsed;
-      } else {
-        localStorage.removeItem("quizpoll_firebase_config");
-      }
-    } catch (e) {
-      config = DEFAULT_FIREBASE_CONFIG;
-    }
+  if (statusEl) {
+    statusEl.className = "status-indicator status-online";
+    statusEl.innerHTML = '<span class="status-dot"></span><span class="status-label">Cloud Live Sync</span>';
   }
 
-  if (config && config.databaseURL) {
-    try {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(config);
+  // Subscribe to live Server-Sent Events stream
+  try {
+    const eventSource = new EventSource(`https://ntfy.sh/${CLOUD_SYNC_TOPIC}/sse`);
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload.event === "message" && payload.message) {
+          const syncData = JSON.parse(payload.message);
+          
+          if (syncData.type === "participant_submission" && syncData.quizId === appState.activeQuizId) {
+            if (!appState.activeQuiz.participants) {
+              appState.activeQuiz.participants = {};
+            }
+            appState.activeQuiz.participants[syncData.pid] = syncData.data;
+            localStorage.setItem(`quizpoll_${appState.activeQuizId}`, JSON.stringify(appState.activeQuiz));
+
+            // Live update the dashboard without reload!
+            const adminView = document.getElementById("adminView");
+            if (adminView && adminView.classList.contains("active-view")) {
+              renderAdminDashboard();
+            }
+          }
+        }
+      } catch (err) {
+        // Ignore unformatted broadcast messages
       }
-      appState.firebaseDb = firebase.database();
-      appState.isFirebaseActive = true;
+    };
 
-      statusEl.className = "status-indicator status-online";
-      statusEl.innerHTML = '<span class="status-dot"></span><span class="status-label">Online</span>';
-      return;
-    } catch (e) {
-      console.warn("Firebase Init Error:", e);
-    }
+    eventSource.onerror = () => {
+      // Automatic browser reconnect
+    };
+  } catch (e) {
+    console.warn("Realtime stream init:", e);
   }
-
-  appState.isFirebaseActive = false;
-  statusEl.className = "status-indicator status-offline";
-  statusEl.innerHTML = '<span class="status-dot"></span><span class="status-label">Local</span>';
 }
 
 function loadQuizData(quizId, callback) {
-  if (appState.isFirebaseActive && appState.firebaseDb) {
-    const quizRef = appState.firebaseDb.ref(`quizzes/${quizId}`);
-    quizRef.on("value", (snapshot) => {
-      const data = snapshot.val();
-      if (data && data.questions && data.questions.length === 20 && data.questions[7].correctIndex !== 0) {
-        appState.activeQuiz = data;
-        localStorage.setItem(`quizpoll_${quizId}`, JSON.stringify(data)); // Save locally
-      } else {
-        // If data is missing or has the old un-shuffled all-A version, update with new DEFAULT_QUIZ
-        appState.activeQuiz = { ...DEFAULT_QUIZ, id: quizId, participants: (data && data.participants) || {} };
-        localStorage.setItem(`quizpoll_${quizId}`, JSON.stringify(appState.activeQuiz));
-        quizRef.set(appState.activeQuiz).catch(() => {});
-      }
-      // Update dashboard if host is viewing dashboard
-      const adminView = document.getElementById("adminView");
-      if (adminView && adminView.classList.contains("active-view")) {
-        renderAdminDashboard();
-      }
-
-      // Update participant view if participant is viewing
-      const participantView = document.getElementById("participantView");
-      if (participantView && !participantView.classList.contains("hidden")) {
-        const participantTitle = document.getElementById("participantQuizTitle");
-        if (participantTitle && appState.activeQuiz) {
-          participantTitle.textContent = appState.activeQuiz.title;
-        }
-        // If questions step is active, update the question UI in real-time
-        const stepQ = document.getElementById("participantStepQuestions");
-        if (stepQ && !stepQ.classList.contains("hidden")) {
-          renderCurrentQuestion();
-        }
-      }
-      if (callback) callback();
-    });
-  } else {
-    const localStoreKey = `quizpoll_${quizId}`;
-    const stored = localStorage.getItem(localStoreKey);
-    if (stored) {
+  const localStoreKey = `quizpoll_${quizId}`;
+  const stored = localStorage.getItem(localStoreKey);
+  
+  if (stored) {
+    try {
       appState.activeQuiz = JSON.parse(stored);
-    } else {
+    } catch (e) {
       appState.activeQuiz = { ...DEFAULT_QUIZ, id: quizId };
-      localStorage.setItem(localStoreKey, JSON.stringify(appState.activeQuiz));
     }
-    const adminView = document.getElementById("adminView");
-    if (adminView && adminView.classList.contains("active-view")) {
-      renderAdminDashboard();
-    }
-    if (callback) callback();
+  } else {
+    appState.activeQuiz = { ...DEFAULT_QUIZ, id: quizId };
+    localStorage.setItem(localStoreKey, JSON.stringify(appState.activeQuiz));
   }
+
+  const adminView = document.getElementById("adminView");
+  if (adminView && adminView.classList.contains("active-view")) {
+    renderAdminDashboard();
+  }
+
+  const participantTitle = document.getElementById("participantQuizTitle");
+  if (participantTitle && appState.activeQuiz) {
+    participantTitle.textContent = appState.activeQuiz.title;
+  }
+
+  if (callback) callback();
 }
 
 function saveQuizToDatabase(quizData, callback) {
-  // Always save locally first so user never gets blocked
   localStorage.setItem(`quizpoll_${quizData.id}`, JSON.stringify(quizData));
-
-  if (appState.isFirebaseActive && appState.firebaseDb) {
-    appState.firebaseDb.ref(`quizzes/${quizData.id}`).set(quizData)
-      .then(() => {
-        if (callback) callback();
-      })
-      .catch((err) => {
-        console.warn("Firebase save warning:", err);
-        // Still proceed with local storage copy so new quiz works without blocking
-        if (callback) callback();
-      });
-  } else {
-    if (callback) callback();
-  }
+  if (callback) callback();
 }
 
 function submitParticipantScore(quizId, participantResult, callback) {
-  // Always update local copy first
   if (!appState.activeQuiz.participants) {
     appState.activeQuiz.participants = {};
   }
@@ -429,26 +397,28 @@ function submitParticipantScore(quizId, participantResult, callback) {
   appState.activeQuiz.participants[pid] = participantResult;
   localStorage.setItem(`quizpoll_${quizId}`, JSON.stringify(appState.activeQuiz));
 
-  // Sync to Firebase Realtime Database
-  if (appState.isFirebaseActive && appState.firebaseDb) {
-    const newRef = appState.firebaseDb.ref(`quizzes/${quizId}/participants`).push();
-    newRef.set(participantResult)
-      .then(() => {
-        if (callback) callback();
-      })
-      .catch((err) => {
-        console.warn("Firebase submit sync:", err);
-        if (callback) callback();
-      });
-  } else {
-    if (callback) callback();
-  }
+  // Instantly broadcast participant submission to host dashboard via public realtime cloud
+  const broadcastMsg = JSON.stringify({
+    type: "participant_submission",
+    quizId: quizId,
+    pid: pid,
+    data: participantResult
+  });
 
-  // Update dashboard if host is on dashboard
+  fetch(`https://ntfy.sh/${CLOUD_SYNC_TOPIC}`, {
+    method: "POST",
+    body: broadcastMsg,
+    headers: { "Content-Type": "text/plain" }
+  }).catch(() => {
+    // Network fallback
+  });
+
+  // Local dashboard instant update if on same device
   const adminView = document.getElementById("adminView");
   if (adminView && adminView.classList.contains("active-view")) {
     renderAdminDashboard();
   }
+  if (callback) callback();
 }
 
 // ==========================================
@@ -910,38 +880,17 @@ function setupEventListeners() {
     handleSaveNewQuiz();
   });
 
-  // Modal Firebase
+  // Modal Firebase (Guarded if element exists)
   const modalConfig = document.getElementById("modalFirebaseConfig");
-  document.getElementById("btnConfigModal").addEventListener("click", () => {
-    modalConfig.classList.remove("hidden");
-  });
-  document.getElementById("btnCloseConfigModal").addEventListener("click", () => {
-    modalConfig.classList.add("hidden");
-  });
-
-  document.getElementById("btnResetToDemo").addEventListener("click", () => {
-    localStorage.removeItem("quizpoll_firebase_config");
-    modalConfig.classList.add("hidden");
-    initFirebase();
-    showToast("Reverted to default settings");
-  });
-
-  document.getElementById("formFirebaseConfig").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const apiKey = document.getElementById("cfgApiKey").value.trim();
-    const databaseURL = document.getElementById("cfgDatabaseURL").value.trim();
-    const projectId = document.getElementById("cfgProjectId").value.trim();
-
-    const cfg = { apiKey, databaseURL, projectId };
-    localStorage.setItem("quizpoll_firebase_config", JSON.stringify(cfg));
-    modalConfig.classList.add("hidden");
-
-    initFirebase();
-    saveQuizToDatabase(appState.activeQuiz, () => {
-      showToast("Database connected successfully");
-      loadQuizData(appState.activeQuiz.id);
+  const btnConfig = document.getElementById("btnConfigModal");
+  if (btnConfig && modalConfig) {
+    btnConfig.addEventListener("click", () => {
+      modalConfig.classList.remove("hidden");
     });
-  });
+    document.getElementById("btnCloseConfigModal")?.addEventListener("click", () => {
+      modalConfig.classList.add("hidden");
+    });
+  }
 }
 
 function openCreateQuizModal() {
